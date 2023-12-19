@@ -14,7 +14,6 @@ type (
 type DynamicAnalysisResults struct {
 	StraceSummary DynamicAnalysisStraceSummary
 	FileWrites    DynamicAnalysisFileWrites
-	URLs          []string
 }
 
 type StaticAnalysisResults = json.RawMessage
@@ -27,6 +26,7 @@ type StraceSummary struct {
 	Sockets  []SocketResult
 	Commands []CommandResult
 	DNS      []DNSResult
+	URLs     []string
 }
 
 type FileWrites []FileWriteResult

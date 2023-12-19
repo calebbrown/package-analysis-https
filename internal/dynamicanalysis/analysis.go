@@ -2,6 +2,11 @@ package dynamicanalysis
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os/exec"
+	"strings"
+	"syscall"
+
 	"github.com/ossf/package-analysis/internal/analysis"
 	"github.com/ossf/package-analysis/internal/dnsanalyzer"
 	"github.com/ossf/package-analysis/internal/log"
@@ -9,10 +14,6 @@ import (
 	"github.com/ossf/package-analysis/internal/sandbox"
 	"github.com/ossf/package-analysis/internal/strace"
 	"github.com/ossf/package-analysis/pkg/api/analysisrun"
-	"io/ioutil"
-	"os/exec"
-	"strings"
-	"syscall"
 )
 
 const (
@@ -70,33 +71,29 @@ func Run(sb sandbox.Sandbox, args []string) (*Result, error) {
 
 	log.Debug("Reroute all http traffic through sslsplit")
 	iptables := exec.Command("iptables", "-t", "nat", "-A", "PREROUTING", "-i", "cni-analysis", "-p", "tcp", "--dport", "80", "-j", "REDIRECT", "--to-port", "8081")
-	err := iptables.Start()
 
-	if err != nil {
+	if err := iptables.Start(); err != nil {
 		log.Fatal(err.Error())
 	}
-	err = iptables.Wait()
-	if err != nil {
+	if err := iptables.Wait(); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	log.Debug("Reroute all https traffic through sslsplit")
 	iptables = exec.Command("iptables", "-t", "nat", "-A", "PREROUTING", "-i", "cni-analysis", "-p", "tcp", "--dport", "443", "-j", "REDIRECT", "--to-port", "8080")
-	err = iptables.Start()
 
-	if err != nil {
+	if err := iptables.Start(); err != nil {
 		log.Fatal(err.Error())
 	}
-	err = iptables.Wait()
-	if err != nil {
+
+	if err := iptables.Wait(); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	log.Debug("starting sslsplit")
 	sslsplit := exec.Command("sslsplit", "-d", "-L", "/tmp/ssl.flow", "-l", "/tmp/sslLinks.flow", "-k", "/proxy/certs/ca.pem", "-c", "/proxy/certs/ca.crt", "http", "0.0.0.0", "8081", "https", "0.0.0.0", "8080")
-	err = sslsplit.Start()
 
-	if err != nil {
+	if err := sslsplit.Start(); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -190,5 +187,5 @@ func (d *Result) setData(straceResult *strace.Result, dns *dnsanalyzer.DNSAnalyz
 		}
 		d.StraceSummary.DNS = append(d.StraceSummary.DNS, c)
 	}
-	d.URLs = sslSplitResult
+	d.StraceSummary.URLs = sslSplitResult
 }

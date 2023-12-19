@@ -215,6 +215,7 @@ func main() {
 
 func generateSSLCerts() error {
 	log.Debug("Generating SSLSplit CA certificates")
+	os.MkdirAll("/proxy/certs", 0o777)
 	createSslCerts := exec.Command("openssl", "genrsa", "-out", "/proxy/certs/ca.pem", "2048")
 	createSslCerts.Dir = "/proxy/certs"
 	err := createSslCerts.Start()

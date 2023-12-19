@@ -21,6 +21,7 @@ RUN apt-get update && apt-get upgrade -y && \
         iptables \
         iproute2 \
         podman \
+        openssl \
         sslsplit \
         software-properties-common && \
     update-alternatives --set iptables /usr/sbin/iptables-legacy && \
